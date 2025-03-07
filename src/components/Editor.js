@@ -20,6 +20,13 @@ function draw() {
   ellipse(mouseX, mouseY, 50, 50);
 }`;
 
+const normalizeCode = (code) => {
+  // Remove all comments (both single line and multi-line)
+  const noComments = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
+  // Remove all non-syntactic whitespace and newlines
+  return noComments.replace(/\s+/g, ' ').trim();
+};
+
 const getIframeContent = (userCode) => `
 <!DOCTYPE html>
 <html>
@@ -78,6 +85,7 @@ const getIframeContent = (userCode) => `
 
 export default function Editor() {
   const [code, setCode] = useState(INITIAL_CODE);
+  const [normalizedCode, setNormalizedCode] = useState(normalizeCode(INITIAL_CODE));
   const [prompt, setPrompt] = useState("");
   const iframeRef = useRef(null);
   const [selectedModel, setSelectedModel] = useState("gemini-2.0-flash");
@@ -115,11 +123,15 @@ export default function Editor() {
   }, [code]);
 
   const updatePreview = useCallback(() => {
-    if (iframeRef.current) {
-      const iframe = iframeRef.current;
-      iframe.srcdoc = getIframeContent(code);
+    const newNormalizedCode = normalizeCode(code);
+    if (newNormalizedCode !== normalizedCode) {
+      setNormalizedCode(newNormalizedCode);
+      if (iframeRef.current) {
+        const iframe = iframeRef.current;
+        iframe.srcdoc = getIframeContent(code);
+      }
     }
-  }, [code]);
+  }, [code, normalizedCode]);
 
   // Now generateCode can safely use the functions defined above
   const generateCode = useCallback(async () => {
@@ -174,6 +186,13 @@ export default function Editor() {
     }
   }, [code, updatePreview, autoSave, handleScreenshot, handleSaveCode]);
 
+  // Initial load effect
+  useEffect(() => {
+    if (iframeRef.current) {
+      iframeRef.current.srcdoc = getIframeContent(code);
+    }
+  }, []);
+
   // Update the message handler to be more specific
   useEffect(() => {
     const handleMessage = (event) => {
@@ -205,7 +224,10 @@ export default function Editor() {
               height="100vh"
               theme={vscodeDark}
               extensions={[javascript()]}
-              onChange={(value) => setCode(value)}
+              onChange={(value) => {
+                setCode(value);
+                updatePreview();
+              }}
             />
           </div>
           <div id="canvas-column" className="w-1/2 bg-white">
