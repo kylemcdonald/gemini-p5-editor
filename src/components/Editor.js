@@ -245,7 +245,7 @@ export default function Editor() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Write code for a clock using p5.js"
+            placeholder="draw a clock"
             className="flex-1 px-4 py-2 rounded-md control-input"
           />
           <select
