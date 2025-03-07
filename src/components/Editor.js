@@ -4,7 +4,6 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { javascript } from '@codemirror/lang-javascript';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Dynamically import CodeMirror to avoid SSR issues
 const CodeMirror = dynamic(
@@ -20,16 +19,6 @@ function draw() {
   background(220);
   ellipse(mouseX, mouseY, 50, 50);
 }`;
-
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
-
-const generationConfig = {
-  temperature: 1,
-  topP: 0.95,
-  topK: 40,
-  maxOutputTokens: 8192,
-  responseMimeType: "text/plain",
-};
 
 const getIframeContent = (userCode) => `
 <!DOCTYPE html>
@@ -138,37 +127,25 @@ export default function Editor() {
     
     setIsGenerating(true);
     try {
-      const model = genAI.getGenerativeModel({
-        model: selectedModel,
-        systemInstruction: "Respond only with p5.js JavaScript code. Do not add any additional commentary before or after the code.",
-      });
-
-      const chatSession = model.startChat({
-        generationConfig: {
-          ...generationConfig,
-          temperature: parseFloat(temperature)
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        history: [
-          {
-            role: "user",
-            parts: [{ text: prompt }],
-          },
-        ],
+        body: JSON.stringify({
+          prompt,
+          modelName: selectedModel,
+          temperature: parseFloat(temperature)
+        }),
       });
 
-      const result = await chatSession.sendMessage(prompt);
-      let generatedCode = result.response.text();
+      const data = await response.json();
       
-      if (generatedCode.includes('```')) {
-        generatedCode = generatedCode
-          .split('```')
-          .filter((block, index) => index % 2 === 1)
-          .join('\n')
-          .replace(/^javascript\n/m, '')
-          .trim();
+      if (data.error) {
+        throw new Error(data.error);
       }
 
-      setCode(generatedCode);
+      setCode(data.code);
 
       if (autoGenerate) {
         // Wait a moment to let the preview update before generating again
@@ -240,19 +217,19 @@ export default function Editor() {
             />
           </div>
         </div>
-        <div className="absolute bottom-8 left-4 right-4 flex items-center gap-4 px-4 py-3 bg-[#1e1e1e] rounded-lg border border-gray-700 shadow-lg">
+        <div className="absolute bottom-8 left-4 right-4 flex items-center gap-6 px-6 py-4 bottom-controls">
           <input
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Write code for a clock using p5.js"
-            className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-md border border-gray-600"
+            className="flex-1 px-4 py-2 rounded-md control-input"
           />
           <select
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value)}
-            className="px-4 py-2 bg-gray-800 text-white rounded-md border border-gray-600"
+            className="px-4 py-2 rounded-md control-input"
           >
             <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
             <option value="gemini-2.0-pro-exp-02-05">Gemini 2.0 Pro</option>
@@ -266,52 +243,46 @@ export default function Editor() {
               step="0.1"
               value={temperature}
               onChange={(e) => setTemperature(e.target.value)}
-              className="w-20 px-2 py-2 bg-gray-800 text-white rounded-md border border-gray-600"
+              className="w-20 px-2 py-2 rounded-md control-input"
             />
           </div>
-          <div className="flex gap-2">
-            <div className="flex items-center gap-2">
-              <label className="text-white">
-                <input
-                  type="checkbox"
-                  checked={autoSave}
-                  onChange={(e) => setAutoSave(e.target.checked)}
-                  className="mr-2"
-                />
-                Auto-save
-              </label>
-            </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setAutoSave(!autoSave)}
+              className={`px-4 py-2 ${
+                autoSave ? 'active' : 'bg-gray-600'
+              } text-white rounded-md control-button`}
+            >
+              Auto-save
+            </button>
             <button
               onClick={handleScreenshot}
-              className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-md control-button"
             >
               Save Screenshot
             </button>
             <button
               onClick={handleSaveCode}
-              className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+              className="px-4 py-2 bg-purple-600 text-white rounded-md control-button"
             >
               Save Code
             </button>
-            <div className="flex items-center gap-2">
-              <label className="text-white">
-                <input
-                  type="checkbox"
-                  checked={autoGenerate}
-                  onChange={(e) => setAutoGenerate(e.target.checked)}
-                  className="mr-2"
-                />
-                Auto-generate
-              </label>
-            </div>
+            <button
+              onClick={() => setAutoGenerate(!autoGenerate)}
+              className={`px-4 py-2 ${
+                autoGenerate ? 'active' : 'bg-gray-600'
+              } text-white rounded-md control-button`}
+            >
+              Auto-generate
+            </button>
             <button
               onClick={generateCode}
               disabled={isGenerating}
               className={`px-6 py-2 ${
                 isGenerating
                   ? 'bg-blue-400 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700'
-              } text-white rounded-md transition-colors`}
+                  : 'bg-blue-600'
+              } text-white rounded-md control-button`}
             >
               {isGenerating ? 'Generating...' : 'Generate'}
             </button>

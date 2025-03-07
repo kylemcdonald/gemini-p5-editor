@@ -53,3 +53,51 @@ iframe {
   border: none;
   background-color: white;
 }
+
+/* Bottom controls styling */
+.bottom-controls {
+  backdrop-filter: blur(8px);
+  background-color: rgba(30, 30, 30, 0.95);
+  border: 1px solid rgba(75, 85, 99, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Input and select styling */
+.control-input {
+  background-color: rgba(31, 41, 55, 0.7) !important;
+  border: 1px solid rgba(75, 85, 99, 0.4) !important;
+  transition: all 0.2s ease;
+}
+
+.control-input:hover {
+  border-color: rgba(147, 197, 253, 0.4) !important;
+}
+
+.control-input:focus {
+  border-color: rgb(59, 130, 246) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+/* Button styling */
+.control-button {
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.control-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.control-button:active {
+  transform: translateY(0);
+}
+
+.control-button.active {
+  background-color: rgb(59, 130, 246) !important;
+  border-color: rgb(37, 99, 235) !important;
+}
+
+/* Remove checkbox and label styling since we're not using them anymore */

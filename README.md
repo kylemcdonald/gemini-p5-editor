@@ -11,7 +11,7 @@ npm install
 
 2. Add your Gemini API key to `.env.local`:
 ```bash
-NEXT_PUBLIC_GEMINI_API_KEY=your_api_key_here
+GEMINI_API_KEY=your_api_key_here
 ```
 
 3. Start the development server:
