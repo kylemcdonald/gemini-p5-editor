@@ -1,6 +1,17 @@
+---
+title: Gemini P5 Editor
+emoji: 🎨
+colorFrom: blue
+colorTo: purple
+sdk: gradio
+sdk_version: "4.19.2"
+app_file: app.py
+pinned: false
+---
+
 # Gemini P5 Editor
 
-A Next.js application for editing P5.js sketches with AI assistance.
+An interactive p5.js code editor powered by Google's Gemini AI model. Write and execute p5.js sketches with AI assistance.
 
 ## Deployment on Hugging Face Spaces
 
