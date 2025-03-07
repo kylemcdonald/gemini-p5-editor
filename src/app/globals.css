@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #1e1e1e;
+  --foreground: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Add CodeMirror styles */
+.CodeMirror {
+  height: calc(100vh - 100px) !important;
+  font-family: var(--font-geist-mono);
+}
+
+/* Add styles for the iframe */
+#canvas-column iframe {
+  border: none;
+  background: white;
+}
+
+/* Remove the fixed height constraint */
+.cm-editor {
+  height: 100vh !important;
+}
+
+/* Add these styles to center the p5.js sketch */
+.sketch-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--background);
+}
+
+iframe {
+  border: none;
+  background-color: white;
+}
